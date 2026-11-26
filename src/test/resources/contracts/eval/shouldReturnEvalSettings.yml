@@ -1,0 +1,23 @@
+name: should_return_eval_settings
+description: Returns active assistant settings for evaluation traceability
+request:
+  method: GET
+  urlPath: /api/eval/settings
+  headers:
+    X-Eval-Token: contract-token
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body:
+    retrieval:
+      top_k: 4
+      similarity_threshold: 0.6
+      max_context_characters: 8000
+    prompts:
+      - name: chat-system
+        version: 3
+        source: LANGFUSE
+      - name: chat-small-talk
+        version: null
+        source: DEFAULT

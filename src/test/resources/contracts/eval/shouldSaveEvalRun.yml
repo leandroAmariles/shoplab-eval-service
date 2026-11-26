@@ -1,0 +1,54 @@
+name: should_save_eval_run
+description: Persists a completed evaluation run when X-Eval-Token is valid
+request:
+  method: POST
+  urlPath: /api/eval/runs
+  headers:
+    Content-Type: application/json
+    X-Eval-Token: contract-token
+  body:
+    run_id: run-contract-1
+    kind: QUALITY
+    started_at: "2026-11-21T14:02:11Z"
+    finished_at: "2026-11-21T14:11:03Z"
+    origin: dev
+    dataset_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    cases_measured: 1
+    cases_excluded: 0
+    embedding_model: bge-m3
+    prompts:
+      - name: chat-system
+        version: 3
+        source: LANGFUSE
+        pinned: false
+    judge:
+      model: judge
+    evaluator:
+      library: ragas
+    retrieval_config:
+      top_k: 4
+      similarity_threshold: 0.6
+      max_context_characters: 8000
+    results:
+      - case:
+          id: G001
+          category: returns
+          question: "¿Cuál es el plazo estándar para devolver un producto?"
+          reference_answer: "El plazo estándar para devolver un producto es de treinta días naturales."
+          expected_documents:
+            - returns-policy
+        case_kind: answered
+        scores:
+          faithfulness: 0.9
+        retrieved_documents:
+          - returns-policy
+        abstained: false
+response:
+  status: 201
+  headers:
+    Content-Type: application/json
+  body:
+    run_id: run-contract-1
+    kind: QUALITY
+    results: 1
+    new_case_revisions: 1

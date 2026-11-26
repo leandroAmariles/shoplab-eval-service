@@ -1,21 +1,17 @@
-# template-service
+# shoplab-eval-service
 
-Plantilla de los microservicios Java de ShopLab Helpdesk (LAB-103, corregida en LAB-129): Spring Boot 4.x reactivo,
-persistencia JDBC con un esquema propio (ADR-0011, ADR-0015), pipeline de `shoplab-ci` e imagen firmada.
+Servicio de historial de ejecuciones de evaluación RAG y consola `admin-eval` de ShopLab Helpdesk (LAB-130, ADR-0035).
 
-## Crear un servicio
+## Responsabilidades
 
-1. Genera el repositorio desde esta plantilla.
-2. Cambia `template-service` por el nombre del servicio en `pom.xml`, `release-please-config.json`,
-   `src/main/resources/application.yml` y `.github/workflows/`.
-3. Añade `DEPLOY_APP_ID` (variable) y `DEPLOY_APP_PRIVATE_KEY` y `RELEASE_PLEASE_TOKEN` (secretos).
-4. Tras la primera release, haz público el paquete de la imagen (no es reversible).
+- Persistencia inmutable del historial de corridas de evaluación (`POST /api/eval/runs`, `GET /api/eval/runs/{runId}`) protegida por `X-Eval-Token`.
+- Lectura de la configuración activa del asistente (`GET /api/eval/settings`) desde `chat-service` (`GET /api/assistant/settings`) mediante la interfaz HTTP reactiva generada por `shoplab-contracts`.
+- Consultas históricas y comparación de ejecuciones para la pantalla `/admin-eval` (`GET /api/eval/history/runs`, `/runs/{runId}`, `/compare`).
+- Base de datos PostgreSQL propia (`eval`, esquema `eval`, migraciones `db/migration/eval`).
 
-## Construir
+## Construcción y verificación
 
 ```bash
-./mvnw verify   # necesita Docker y acceso a GitHub Packages (servidor `github-shoplab-contracts` en settings.xml)
-GITHUB_TOKEN=... docker build --secret id=github_token,env=GITHUB_TOKEN -t template-service .
+GITHUB_TOKEN=... ./mvnw -B -ntp -s .mvn/ci-settings.xml verify
+GITHUB_TOKEN=... docker build --secret id=github_token,env=GITHUB_TOKEN -t eval-service .
 ```
-
-No lleva autenticación hasta que exista el login (LAB-61).

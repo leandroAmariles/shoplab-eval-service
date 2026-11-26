@@ -1,8 +1,11 @@
 version: "1.0"
 
-# No version: the linter must match the Qodana action of shoplab-ci. A pinned 2025.2 image with the 2026.2 action is
-# reported as not compatible and could not resolve imported symbols (LAB-129).
+# No version: the linter must match the Qodana action of shoplab-ci (LAB-129).
 linter: qodana-jvm-community
+
+# shoplab-contracts and chat-service stubs live in GitHub Packages; shoplab-ci java-service.yml does not forward
+# GITHUB_TOKEN to qodana-action yet, so Maven import inside Qodana cannot resolve external dependency symbols.
+bootstrap: mkdir -p "$HOME/.m2" && cp .mvn/ci-settings.xml "$HOME/.m2/settings.xml"
 
 projectJDK: "21"
 
@@ -13,6 +16,9 @@ exclude:
   - name: All
     paths:
       - target
+  # False positives when Qodana cannot resolve GitHub Packages dependencies (Reactor).
+  - name: JavadocReference
+  - name: ConstantValue
 
 failureConditions:
   severityThresholds:

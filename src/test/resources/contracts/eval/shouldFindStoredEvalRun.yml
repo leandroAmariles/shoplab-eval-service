@@ -1,0 +1,16 @@
+name: should_find_stored_eval_run
+description: Returns stored evaluation run summary by runId
+request:
+  method: GET
+  urlPath: /api/eval/runs/run-contract-1
+  headers:
+    X-Eval-Token: contract-token
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body:
+    run_id: run-contract-1
+    kind: QUALITY
+    started_at: "2026-11-21T14:02:11Z"
+    recorded_at: "2026-11-21T14:11:20Z"
