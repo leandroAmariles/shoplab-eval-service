@@ -11,24 +11,36 @@
     </parent>
 
     <groupId>com.shoplab</groupId>
-    <artifactId>template-service</artifactId>
-    <version>0.1.0</version>
-    <name>template-service</name>
-    <description>Plantilla oficial de los microservicios de ShopLab Helpdesk (LAB-103, corregida en LAB-129)</description>
+    <artifactId>shoplab-eval-service</artifactId>
+    <version>0.0.0</version>
+    <name>shoplab-eval-service</name>
+    <description>Evaluation run history and admin-eval API service of ShopLab Helpdesk (LAB-130)</description>
 
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <shoplab-contracts.version>1.2.0</shoplab-contracts.version>
+        <spring-cloud-contract.version>5.0.3</spring-cloud-contract.version>
+        <rest-assured.version>6.3.0</rest-assured.version>
+        <blockhound.version>1.0.18.RELEASE</blockhound.version>
+        <wiremock.version>3.13.2</wiremock.version>
         <archunit.version>1.4.1</archunit.version>
         <jacoco.version>0.8.16</jacoco.version>
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
         <checkstyle.version>14.4.0</checkstyle.version>
         <pmd.version>3.28.0</pmd.version>
+        <shoplab-contracts.version>1.4.0</shoplab-contracts.version>
+        <chat-stubs.version>0.1.0</chat-stubs.version>
         <argLine/>
     </properties>
 
-    <!-- GitHub Packages asks for credentials even for public packages: see .mvn/ci-settings.xml. -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages ShopLab Eval Stubs</name>
+            <url>https://maven.pkg.github.com/leandroAmariles/shoplab-eval-service</url>
+        </repository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>github-shoplab-contracts</id>
@@ -38,7 +50,39 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>github-shoplab-chat</id>
+            <name>GitHub Packages ShopLab Chat Stubs</name>
+            <url>https://maven.pkg.github.com/leandroAmariles/shoplab-chat-service</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured-bom</artifactId>
+                <version>${rest-assured.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-dependencies</artifactId>
+                <version>${spring-cloud-contract.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.shoplab</groupId>
+                <artifactId>shoplab-contracts</artifactId>
+                <version>${shoplab-contracts.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -52,6 +96,10 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>context-propagation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -77,11 +125,24 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Shared data shapes only, never domain logic (ADR-0015, LAB-108). -->
+        <!-- Generated HTTP interface of chat-service assistant settings from shoplab-contracts (LAB-59, LAB-130). -->
         <dependency>
             <groupId>com.shoplab</groupId>
             <artifactId>shoplab-contracts</artifactId>
-            <version>${shoplab-contracts.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.shoplab</groupId>
+            <artifactId>shoplab-chat-service</artifactId>
+            <version>${chat-stubs.version}</version>
+            <classifier>stubs</classifier>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -110,13 +171,98 @@
             <version>${archunit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound</artifactId>
+            <version>${blockhound.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>spring-web-test-client</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[21,)</version>
+                                    <message>Java 21 or higher is required to build this project.</message>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.9,)</version>
+                                    <message>Maven 3.9 or higher is required (use the Maven Wrapper).</message>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <version>${spring-cloud-contract.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <testMode>WEBTESTCLIENT</testMode>
+                    <basePackageForTests>com.shoplab.eval.contracts.generated</basePackageForTests>
+                    <contractsDirectory>${project.basedir}/src/test/resources/contracts</contractsDirectory>
+                    <baseClassMappings>
+                        <baseClassMapping>
+                            <contractPackageRegex>.*eval.*</contractPackageRegex>
+                            <baseClassFQN>com.shoplab.eval.infrastructure.in.rest.EvalContractBase</baseClassFQN>
+                        </baseClassMapping>
+                    </baseClassMappings>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- BlockHound (installed by the JUnit session listener) redefines JDK classes on JDK 13+ -->
+                    <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods</argLine>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -127,8 +273,8 @@
                     <excludes>
                         <exclude>**/dto/**</exclude>
                         <exclude>**/config/**</exclude>
-                        <exclude>**/util/mapper/**</exclude>
                         <exclude>**/model/**</exclude>
+                        <exclude>**/util/mapper/**</exclude>
                         <exclude>**/exception/**</exclude>
                         <exclude>**/*Application.class</exclude>
                     </excludes>
@@ -185,6 +331,7 @@
                 <configuration>
                     <configLocation>config/checkstyle.xml</configLocation>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <excludes>**/contracts/generated/**</excludes>
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
                     <violationSeverity>warning</violationSeverity>
@@ -210,6 +357,9 @@
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
                     <includeTests>true</includeTests>
+                    <excludes>
+                        <exclude>**/contracts/generated/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

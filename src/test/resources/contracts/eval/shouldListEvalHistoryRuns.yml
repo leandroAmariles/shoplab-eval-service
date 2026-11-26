@@ -1,0 +1,36 @@
+name: should_list_eval_history_runs
+description: Lists historical evaluation runs without token for admin-eval
+request:
+  method: GET
+  urlPath: /api/eval/history/runs
+  queryParameters:
+    kind: QUALITY
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body:
+    kind: QUALITY
+    shown: 1
+    total: 1
+    total_all_origins: 1
+    origins:
+      - origin: dev
+        count: 1
+    runs:
+      - run_id: run-contract-1
+        kind: QUALITY
+        started_at: "2026-11-21T14:02:11Z"
+        finished_at: "2026-11-21T14:11:03Z"
+        origin: dev
+        assistant_model: chat
+        cases_measured: 96
+        prompts:
+          - name: chat-system
+            version: 3
+            source: LANGFUSE
+            pinned: false
+        metrics:
+          faithfulness:
+            mean: 0.85
+            n: 96

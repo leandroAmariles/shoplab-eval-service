@@ -1,0 +1,14 @@
+name: should_return_404_when_eval_run_not_found
+description: Returns 404 SLHD_EVAL_00004 when evaluation run does not exist
+request:
+  method: GET
+  urlPath: /api/eval/runs/run-missing
+  headers:
+    X-Eval-Token: contract-token
+response:
+  status: 404
+  headers:
+    Content-Type: application/json
+  body:
+    code: SLHD_EVAL_00004
+    message: There is no evaluation run with that id

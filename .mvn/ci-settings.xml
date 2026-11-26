@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Used by the Dockerfile to download shoplab-contracts from GitHub Packages. No credential lives here: the token is
-     read from the environment. Locally: docker build with the secret `id=github_token,env=GITHUB_TOKEN`. -->
+<!-- Used by CI and Dockerfile to download shoplab-contracts and chat stubs from GitHub Packages, and to deploy
+     eval stubs. No credential lives here: the token is read from the environment. -->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
     <servers>
         <server>
+            <id>github</id>
+            <username>x-access-token</username>
+            <password>${env.GITHUB_TOKEN}</password>
+        </server>
+        <server>
             <id>github-shoplab-contracts</id>
+            <username>x-access-token</username>
+            <password>${env.GITHUB_TOKEN}</password>
+        </server>
+        <server>
+            <id>github-shoplab-chat</id>
             <username>x-access-token</username>
             <password>${env.GITHUB_TOKEN}</password>
         </server>
