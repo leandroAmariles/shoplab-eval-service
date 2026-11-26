@@ -1,0 +1,20 @@
+version: "1.0"
+
+# No version: the linter must match the Qodana action of shoplab-ci. A pinned 2025.2 image with the 2026.2 action is
+# reported as not compatible and could not resolve imported symbols (LAB-129).
+linter: qodana-jvm-community
+
+projectJDK: "21"
+
+profile:
+  name: qodana.recommended
+
+exclude:
+  - name: All
+    paths:
+      - target
+
+failureConditions:
+  severityThresholds:
+    critical: 0
+    high: 0
